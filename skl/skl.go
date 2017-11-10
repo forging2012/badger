@@ -50,18 +50,18 @@ const (
 const MaxNodeSize = int(unsafe.Sizeof(node{}))
 
 type node struct {
+	// Multiple parts of the value are encoded as a single uint64 so that it
+	// can be atomically loaded and stored:
+	//   value offset: uint32 (bits 0-31)
+	//   value size  : uint16 (bits 32-47)
+	value uint64
+
 	// A byte slice is 24 bytes. We are trying to save space here.
 	keyOffset uint32 // Immutable. No need to lock to access key.
 	keySize   uint16 // Immutable. No need to lock to access key.
 
 	// Height of the tower.
 	height uint16
-
-	// Multiple parts of the value are encoded as a single uint64 so that it
-	// can be atomically loaded and stored:
-	//   value offset: uint32 (bits 0-31)
-	//   value size  : uint16 (bits 32-47)
-	value uint64
 
 	// Most nodes do not need to use the full height of the tower, since the
 	// probability of each successive level decreases exponentially. Because
